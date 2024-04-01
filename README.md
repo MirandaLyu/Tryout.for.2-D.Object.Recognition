@@ -10,7 +10,7 @@ My object recognition system was designed as a command line program.
 
 It takes in a folder of images and either saves the objects' features to databse OR gives unknown objects matching labels.
 
-*All images are white background and contain only one object
+*All images are shot myself, white background and contain only one object
 
 ## first, thresholding the image
 
