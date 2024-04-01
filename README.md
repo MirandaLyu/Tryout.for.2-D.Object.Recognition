@@ -79,7 +79,7 @@ Examples:
 
 ## FINAL THOUGHTS
 
-Because of the time constriant, my tryout stopped up to this point. There are lots of things that can continue trying in this area, like implementing a new classifier, letting an images have more than one object, turning the whole system into a real-time video one, etc.
+Because of the time constriant, my tryout stopped up to this point. There are lots of things that can continue trying in this area, like implementing a new classifier, letting an image has more than one object, turning the whole system into a real-time video one, etc.
 
 When I was doing the training, some objects were actually more complicated than the ones shown above: 
 
