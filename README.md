@@ -1,43 +1,43 @@
-# practice-for-Content-based-Image-Retrieval
+# tryout-for-2D-object-recognition
 
-This was a CV class project as well. But it took me a lot of time to build. Good amounts of time were spent on reading textbooks (trying to understand the mechanisms of thresholding, morphological operations, the least central moment, etc.) and reading OpenCV documentations.
+This was a CV class project as well. But it took me a lot of time to build.
+
+Good amounts of time were spent on reading textbooks (trying to understand the mechanisms of thresholding, morphological operations, the least central moment, etc.) and reading OpenCV documentations (understanding how to correctly use some functions).
 
 ## general design
 
-The CBIR system was implemented as a command line program. It runs with 5 inputs which are
-* *a target image*
-* *the image database*
-* *a feature calculation method*
-* *a distance metric*
-* *how many top N matching images you want*
+My object recognition system was designed as a command line program.
 
-The target image is the one you want to find similar photos for, the feature method is a way to get a photo's mathematical feature, and the distance metric is a way to compare two photos' features. The image database in this project is [here](https://drive.google.com/drive/folders/1rsZKCSA6oTLglI1IN_BhKH9EPqGt27dU?usp=sharing).
+It takes in a folder of images and either saves the objects' features to databse OR gives unknown objects matching labels.
 
-## first, try a simple matching method
+*All images are white background and contain only one object
 
-This baseline matching only extracts the middle 9x9 pixels in every picture as the feature, and uses sum-of-squared-difference to compare every two features (do calculations for every pixel and add the differences together). One example of the output is this:
+## first, thresholding the image
 
-<img width="220" alt="Screenshot 2024-03-10 at 9 13 25 PM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/ef759054-77c4-408b-a30e-e834ea062f86">
+There are actually a lot of ways to find a relatively optimal threshold for an image. I have tried many and I found Otsu’s Method work best with my training images.
 
-The upper left corner is the target image and others are the top 3 matches. We can see that the middles are indeed all red. And this is the metric calculated:
+So I preprocessed every image a little first (blurring a little and making strongly colored pixels be darker) and then applied Otsu’s Method to binary images from scratch (not using the built-in function).
 
-<img width="350" alt="Screenshot 2024-03-11 at 1 42 35 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/c58abdd7-7898-443f-aec2-03bf7972c7bb">
+Here are examples of the original vs thresholded images:
 
-## now, color matching
+<img width="200" alt="Screenshot 2024-03-31 at 9 12 20 PM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/93cccc8a-70fe-4743-8a32-516fb2559402">
+<img width="100" alt="Screenshot 2024-03-31 at 9 12 32 PM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/f80183e6-1120-4141-8fb4-ccab12be6aa6">
 
-Color matching usually uses histogram so I built a 3-D 8 bins histogram for each image as feature vector. Then every two images are compared using a metric called histogram intersection (the larger the intersection, the more the similarity).
+<img width="200" alt="Screenshot 2024-03-31 at 9 12 41 PM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/d3ef21c1-2e95-452f-b736-e8dbd96033ee">
+<img width="100" alt="Screenshot 2024-03-31 at 9 12 50 PM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/67edfd39-db11-4009-b40b-280e86d5ac42">
 
-One example of the output is like this:
+## second, clean up
 
-<img width="220" alt="Screenshot 2024-03-11 at 1 56 33 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/20f622ad-5645-4ba8-8775-62bc808ac151">
+Cleaning up is a very skilled technique. It can use layers of different morphological operations to deal with complicated shapes.
 
-with the following stats:
+But since here my thresholded images are already doing a good job, I just used the Closing operation to fill the small holes in images.
 
-<img width="350" alt="Screenshot 2024-03-12 at 12 17 56 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/5ef398d6-a3f0-4ee5-b7a5-344dd6e815cb">
+Results:
 
-We can see that these color distributions are very alike. But the lack of spatial precision is the disadvantage of color histograms.
+<img width="200" alt="Screenshot 2024-03-31 at 9 25 25 PM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/8e492630-2d85-4eb9-9926-353c89a4bb19">
+<img width="102" alt="Screenshot 2024-03-31 at 9 25 33 PM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/b4557546-9120-43af-b3aa-041a98c4cb18">
 
-## so let's try add a little spatial information
+## third, segmentation
 
 In order to improve the matching precision, this time I let the system to produce two color histograms for each picture. One represented the upper 1/2 part of the image, the other represented the bottom. They later were compared separately using histogram intersection and the final distance was the sum of two comparisons.
 
