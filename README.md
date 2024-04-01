@@ -39,46 +39,54 @@ Results:
 
 ## third, segmentation
 
-In order to improve the matching precision, this time I let the system to produce two color histograms for each picture. One represented the upper 1/2 part of the image, the other represented the bottom. They later were compared separately using histogram intersection and the final distance was the sum of two comparisons.
+I ran the connectedComponentsWithStats() function on the cleaned up images, which gave me detailed information of each connected region in an image (such as area, centroids).
 
-And one of the output looks like this:
+Since I just want the central object to be colored and show, I let the system find 3 largest region areas first, and then choose the one which is closest to the center of the image.
 
-<img width="250" alt="Screenshot 2024-03-12 at 12 27 35 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/780deb84-36e8-45df-964f-d190566c489a">
+And these are the colored results:
 
-We can see that after the feature being separated to two regions, the similarity is a little more obvious, especially the top match 2 picture (top match 1 is the original target picture). This also reflects in the stats:
+<img width="200" alt="Screenshot 2024-03-31 at 11 56 54 PM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/d0d7ae05-5fc0-4e9e-827a-c322fded682e">
+<img width="102" alt="Screenshot 2024-03-31 at 11 57 02 PM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/faefa32d-bff6-4cd1-a10e-c5f8fb57afaf">
 
-<img width="350" alt="Screenshot 2024-03-12 at 12 27 46 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/1ec9e608-55a9-4553-8bd3-c88848e7c245">
+## fourth, the axis of least central moment and the oriented bounding box
 
-## compare texture as well
+Here is to better locate objects. The axis of least central moment was drawn by calculating the orientation angle first. The oriented bounding box was drawn using minAreaRect() function, showing the smallest rectangle that encompasses the object.
 
-Color and spatial layout are two of the attributes of a picture. Texture is another one. But how to compare texture?
+*I actually need more time to understand what moments really are
 
-The approach used here is to calculate the Sobel magnitude image (Sobel detects edges) and use a histogram of gradient magnitudes as the texture feature. 16 bin size was used here.
+Results:
 
-So we can compare 3-D whole image color histograms and 1-D texture histograms together this time. The results were added then. This is one example of the output:
+<img width="200" alt="Screenshot 2024-04-01 at 12 12 14 AM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/89afcf8e-e8e9-452e-b21b-b9dff790694e">
+<img width="102" alt="Screenshot 2024-04-01 at 12 12 44 AM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/b0b614f1-304b-4ccf-b351-1dc5f3ec9b87">
 
-<img width="250" alt="Screenshot 2024-03-12 at 1 02 07 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/e0284848-1da7-4225-899b-27fffa800644">
+## fifth, get mathematical features
 
-This result may not be obvious. I also ran the same photo with previous color matching methods:
+In computer's intelligence, every object is represented by a set of features. So I computed "percentFilled", "boundingBoxRatio", "perimeter", and "circularity" for each object and if you want to save these features to database, the system will ask you for a label/name.
 
-<img width="250" alt="Screenshot 2024-03-12 at 1 02 24 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/f1a67e7e-e8e8-4efd-a2a5-577994e56daf">
+This is an example database file I got:
 
-Now we can see that texture indeed adds a layer of complexity in matching. Though still losing spatial precision.
+<img width="220" alt="Screenshot 2024-04-01 at 12 23 06 AM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/ebd466e1-191c-4af4-8cbd-125e23cfcf5b">
 
-## final try
+## sixth, identify
 
-Finally, I decided to try gradient orientations as well. I designed the texture histogram to be a 2-D histogram with both magnitudes and orientations information (8 bins each dimension). And in order to compare texture more precisely, I divided the whole image into 4 equal regions and concatenated 4
-regions’ texture histograms into a final one. 
+So after calculating all the features as in the last step, if you want to identify an object, the system will compare its features with each object in the database (using the scaled Euclidean distance) and show the smallest-distance matching label on the image.
 
-For color, I still use the whole image 3-D method. Then two results are these:
+Examples:
 
-<img width="270" alt="Screenshot 2024-03-12 at 1 18 48 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/3242b829-7a84-4125-bde2-8f0b6d8cf51d">
+<img width="120" alt="Screenshot 2024-04-01 at 12 28 57 AM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/39ac69ec-9f0c-46ad-9a01-775286916acb">
+<img width="120" alt="Screenshot 2024-04-01 at 12 29 07 AM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/467f388b-7644-4ce7-a226-f777536b9383">
+<img width="120" alt="Screenshot 2024-04-01 at 12 29 14 AM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/7345b400-542b-4f81-a273-e061f19e3933">
 
-<img width="270" alt="Screenshot 2024-03-12 at 1 19 00 AM" src="https://github.com/MirandaLyu/practice.for.Content-based.Image.Retrieval/assets/115821003/5b2f9a70-b664-445d-bc72-3e042baf5eaa">
+## FINAL THOUGHTS
 
-After long battling with math, I was satisfied with the results, especially the second one.
+Because of the time constriant, my tryout stopped up to this point. There are lots of things that can continue trying in this area, like implementing a new classifier, letting an images have more than one object, turning the whole system into a real-time video one, etc.
 
-## FINAL THOUGHT
+When I was doing the training, some objects were actually more complicated than the ones shown above: 
 
-* Probably from the description, you can also see that matching method can be more and more precise. There must be a lot of people working on this.
-* I invested a lot of time learning and doing this project 😵 , but I enjoyed it in the end because I felt more like a real science person. Since I knew very little about computer vision, I read paper and textbook first to understand concepts and methodologies. So the whole process was like using papers, ChatGPT, youTube and class recordings together. But it really improved research skills.
+<img width="63" alt="Screenshot 2024-04-01 at 12 39 33 AM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/929295d9-237a-452b-b45a-d81d5bae8955">
+<img width="62" alt="Screenshot 2024-04-01 at 12 39 42 AM" src="https://github.com/MirandaLyu/Tryout.for.2-D.Object.Recognition/assets/115821003/55d3fd49-32be-4ef8-b20b-1802d95010ea">
+
+Real life situations must have more variations.
+
+But it's fun to experience the whole process and learn more about what is object detection.
+
